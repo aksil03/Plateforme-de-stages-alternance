@@ -1,6 +1,7 @@
-// src/pages/Login.tsx
-import React, { useEffect } from 'react'
+
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import {
   Form,
   FormField,
@@ -12,23 +13,64 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 interface LoginFormValues {
-  email: string
+  email: string 
   password: string
 }
 
-export default function Login() {
+interface LoginProps {
+  setUser: React.Dispatch<React.SetStateAction<string | null>>
+}
+
+export default function Login({ setUser }: LoginProps) { 
+  const navigate = useNavigate() 
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
   const form = useForm<LoginFormValues>({
     defaultValues: {
-      email: '',
-      password: '',
+      email: '', 
+      password: '', 
     },
   })
 
-  const onSubmit = (values: LoginFormValues) => {
-    console.log('Email:', values.email, 'Password:', values.password)
+  const onSubmit = async (values: LoginFormValues) => {
+    setIsLoading(true)
+    setErrorMessage(null)
+
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: values.email, 
+          password: values.password 
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        console.log('Connexion réussie:', data)
+    
+        setUser(data.role) 
+        
+
+        navigate('/') 
+
+      } else {
+        console.error('Erreur de connexion:', data.message)
+        setErrorMessage(data.message || 'Erreur lors de la connexion. Vérifiez vos identifiants.')
+      }
+    } catch (error) {
+      console.error('Erreur réseau/serveur:', error)
+      setErrorMessage("Impossible de joindre le serveur. Le backend est-il lancé sur le port 5000 ?")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  // 🔒 Bloquer le scroll sur le body quand on est sur cette page
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow
     document.body.style.overflow = 'hidden'
@@ -39,9 +81,7 @@ export default function Login() {
 
   return (
     <div className="relative h-screen w-screen flex items-center justify-center font-sans text-white overflow-hidden">
-      {/* --- Fond sombre avec grille + halo --- */}
       <div className="absolute inset-0 -z-10 bg-black">
-        {/* Grille subtile */}
         <div
           className="absolute inset-0"
           style={{
@@ -53,7 +93,6 @@ export default function Login() {
           }}
         ></div>
 
-        {/* Halo radial doux et fixe */}
         <div
           className="absolute inset-0"
           style={{
@@ -63,29 +102,34 @@ export default function Login() {
         ></div>
       </div>
 
-      {/* --- Formulaire sombre et élégant --- */}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="relative z-10 w-full max-w-md 
-                     bg-neutral-900/90 backdrop-blur-md border border-white/10
-                     p-10 rounded-2xl shadow-2xl space-y-6"
+                    bg-neutral-900/90 backdrop-blur-md border border-white/10
+                    p-10 rounded-2xl shadow-2xl space-y-6"
         >
           <h2 className="text-3xl font-extrabold text-center text-white mb-4">
             Connexion
           </h2>
+   
+          {errorMessage && (
+            <div className="text-sm text-red-400 bg-red-900/50 p-3 rounded-lg border border-red-700">
+              {errorMessage}
+            </div>
+          )}
 
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white/80">Email</FormLabel>
+                <FormLabel className="text-white/80">Login / Email</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    type="email"
-                    placeholder="exemple@email.com"
+                    type="text" 
+                    placeholder="Votre Login ou Email"
                     className="bg-neutral-800 border border-white/10 text-white placeholder-white/30 focus:border-white/40"
                   />
                 </FormControl>
@@ -113,9 +157,10 @@ export default function Login() {
 
           <Button
             type="submit"
+            disabled={isLoading}
             className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg py-2"
           >
-            Se connecter
+            {isLoading ? 'Connexion en cours...' : 'Se connecter'}
           </Button>
         </form>
       </Form>
