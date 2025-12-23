@@ -1,4 +1,4 @@
-// src/pages/admin/CreationCompte.tsx
+
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import {
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface CreationCompteFormValues {
-    role: 'Secretaire' | 'Enseignant' | ''; // Rôle sélectionné
+    role: 'Secretaire' | 'Enseignant' | '';
     login: string;
     password: string;
     nom: string;
@@ -54,7 +54,7 @@ export default function CreationCompte() {
 
             if (response.ok) {
                 setMessage({ type: 'success', text: data.message || `Compte créé avec succès pour ${values.login}.` })
-                form.reset() // Réinitialise le formulaire
+                form.reset() 
             } else {
                 setMessage({ type: 'error', text: data.message || 'Échec de la création de compte.' })
             }
@@ -66,7 +66,6 @@ export default function CreationCompte() {
         }
     }
 
-    // Définir la couleur du message
     const messageColor = message ? (message.type === 'success' ? 'bg-green-900/50 text-green-400 border-green-700' : 'bg-red-900/50 text-red-400 border-red-700') : ''
 
     return (
@@ -82,7 +81,7 @@ export default function CreationCompte() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     
-                    {/* Sélecteur de Rôle */}
+       
                     <FormField
                         control={form.control}
                         name="role"
@@ -107,7 +106,6 @@ export default function CreationCompte() {
                     />
 
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Champ Nom */}
                         <FormField
                             control={form.control}
                             name="nom"
@@ -123,7 +121,7 @@ export default function CreationCompte() {
                             )}
                         />
                         
-                        {/* Champ Prénom */}
+   
                         <FormField
                             control={form.control}
                             name="prenom"
@@ -140,7 +138,6 @@ export default function CreationCompte() {
                         />
                     </div>
 
-                    {/* Champ Email */}
                     <FormField
                         control={form.control}
                         name="email"
@@ -157,7 +154,7 @@ export default function CreationCompte() {
                     />
 
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Champ Login */}
+       
                         <FormField
                             control={form.control}
                             name="login"
@@ -173,7 +170,7 @@ export default function CreationCompte() {
                             )}
                         />
                         
-                        {/* Champ Mot de passe */}
+    
                         <FormField
                             control={form.control}
                             name="password"

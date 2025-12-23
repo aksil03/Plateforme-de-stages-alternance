@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -19,9 +18,11 @@ interface LoginFormValues {
 
 interface LoginProps {
   setUser: React.Dispatch<React.SetStateAction<string | null>>
+  setUserName: React.Dispatch<React.SetStateAction<string | null>>
 }
 
-export default function Login({ setUser }: LoginProps) { 
+
+export default function Login({ setUser, setUserName }: LoginProps) { 
   const navigate = useNavigate() 
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -34,42 +35,56 @@ export default function Login({ setUser }: LoginProps) {
   })
 
   const onSubmit = async (values: LoginFormValues) => {
-    setIsLoading(true)
-    setErrorMessage(null)
+    setIsLoading(true);
+    setErrorMessage(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email: values.email, 
-          password: values.password 
-        }),
-      })
+        const response = await fetch('http://localhost:5000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                login: values.email, 
+                password: values.password 
+            }),
+        });
 
-      const data = await response.json()
+        const data = await response.json();
 
-      if (response.ok) {
-        console.log('Connexion réussie:', data)
-    
-        setUser(data.role) 
-        
+        if (response.ok) {
+            console.log('Connexion réussie:', data);
+            
+            const fullName = `${data.prenom} ${data.nom}`;
+            setUser(data.role);
+            setUserName(fullName);
 
-        navigate('/') 
+            localStorage.setItem('userId', data.userId);
+            localStorage.setItem('userRole', data.role);
+            localStorage.setItem('userName', fullName);
+            localStorage.setItem('userEmail', data.email);
+            localStorage.setItem('userLogin', values.email);
+            localStorage.setItem('userMdp', values.password);
+            localStorage.setItem('isReplacement', data.isReplacement ? 'true' : 'false');
+            localStorage.setItem('userStatutRecherche', String(data.statut_recherche));
+    localStorage.setItem('userAttestation', String(data.attestation_responsabilite));
+    localStorage.setItem('userValidation', data.validation_attestation);
+    localStorage.setItem('userVisibilite', String(data.visibilite_infos));
 
-      } else {
-        console.error('Erreur de connexion:', data.message)
-        setErrorMessage(data.message || 'Erreur lors de la connexion. Vérifiez vos identifiants.')
-      }
+            if (data.filiere) localStorage.setItem('userFiliere', data.filiere);
+
+      
+            navigate('/'); 
+            return; 
+        } else {
+            setErrorMessage(data.message || 'Identifiants incorrects.');
+        }
     } catch (error) {
-      console.error('Erreur réseau/serveur:', error)
-      setErrorMessage("Impossible de joindre le serveur. Le backend est-il lancé sur le port 5000 ?")
+   
+        console.error('Erreur réseau:', error);
+        setErrorMessage("Impossible de joindre le serveur. Vérifiez votre VPN.");
     } finally {
-      setIsLoading(false)
+        setIsLoading(false);
     }
-  }
+};
 
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow
@@ -81,6 +96,7 @@ export default function Login({ setUser }: LoginProps) {
 
   return (
     <div className="relative h-screen w-screen flex items-center justify-center font-sans text-white overflow-hidden">
+   
       <div className="absolute inset-0 -z-10 bg-black">
         <div
           className="absolute inset-0"
@@ -92,7 +108,6 @@ export default function Login({ setUser }: LoginProps) {
             backgroundSize: '14px 24px',
           }}
         ></div>
-
         <div
           className="absolute inset-0"
           style={{
@@ -124,12 +139,12 @@ export default function Login({ setUser }: LoginProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-white/80">Login / Email</FormLabel>
+                <FormLabel className="text-white/80">Login</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="text" 
-                    placeholder="Votre Login ou Email"
+                    placeholder="Votre identifiant (ex: aksil)"
                     className="bg-neutral-800 border border-white/10 text-white placeholder-white/30 focus:border-white/40"
                   />
                 </FormControl>
@@ -155,13 +170,27 @@ export default function Login({ setUser }: LoginProps) {
             )}
           />
 
-          <Button
+<Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg py-2"
+            className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg py-2 transition-colors"
           >
             {isLoading ? 'Connexion en cours...' : 'Se connecter'}
           </Button>
+
+         
+          <div className="text-center mt-4">
+            <p className="text-sm text-white/40">
+              Vous êtes une entreprise ?{' '}
+              <button 
+                type="button"
+                onClick={() => navigate('/register-entreprise')}
+                className="text-blue-400 hover:underline font-medium"
+              >
+                Inscrivez votre établissement
+              </button>
+            </p>
+          </div>
         </form>
       </Form>
     </div>
