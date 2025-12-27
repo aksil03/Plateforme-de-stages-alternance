@@ -677,7 +677,7 @@ app.get('/api/etudiants/:id/attestation', async (req, res) => {
 
 
 app.get('/api/secretaire/attestations-pendantes', async (req, res) => {
-            console.log("🔥 ROUTE ATTESTATIONS PENDANTES APPELÉE 🔥");
+            console.log(" attestations pendantes affichées");
 
     try {
         const result = await pool.query(`
