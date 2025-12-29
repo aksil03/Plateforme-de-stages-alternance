@@ -7,13 +7,23 @@ import {
 } from 'lucide-react';
 
 export default function ValiderOffres() {
+
+    const motifRefus = [
+        "Informations incomplètes ou incorrectes",
+        "Rémunération non conforme aux standards légaux",
+        "Offre hors sujet au domaine d'étude",
+        "Secteur d'activité non conforme aux politiques de l'école",
+        "Durée ou lieu non autorisé",
+        "Autre"
+    ];
+    const [motifSelectionner, setMotifSelectionner] = useState("");
+    const [motifTexte, setMotifTexte] = useState("");
     const [offres, setOffres] = useState<any[]>([]);
     const [selectedOffre, setSelectedOffre] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     
  
     const [showRefusBox, setShowRefusBox] = useState(false);
-    const [motif, setMotif] = useState("");
 
     const id_enseignant = localStorage.getItem('userId');
 
@@ -30,9 +40,13 @@ export default function ValiderOffres() {
     useEffect(() => { fetchOffres(); }, []);
 
     const handleAction = async (action: 'validée' | 'refusée') => {
-        if (action === 'refusée' && !motif.trim()) {
-            alert("Veuillez préciser un motif de refus pour informer l'entreprise.");
-            return;
+
+        let motif = "";
+        if(action === "refusée"){
+           motif = motifSelectionner === "Autre" ? motifTexte : motifSelectionner;
+           if(!motif){
+            return alert("Veuillez préciser un motif de refus pour informer l'entreprise.")
+           }
         }
 
         try {
@@ -48,7 +62,8 @@ export default function ValiderOffres() {
             if (res.ok) {
                 setSelectedOffre(null);
                 setShowRefusBox(false);
-                setMotif("");
+                setMotifSelectionner("");
+                setMotifTexte("");
                 fetchOffres();
             }
         } catch (err) { console.error(err); }
@@ -136,17 +151,41 @@ export default function ValiderOffres() {
                                 </Button>
                             </div>
                         ) : (
+
+
+                            
                             <div className="pt-6 space-y-4 border-t border-red-500/20 animate-in slide-in-from-top-2">
                                 <div className="flex items-center gap-2 text-red-400 font-bold uppercase text-xs tracking-widest">
                                     <MessageSquare size={16} />
-                                    <span>Précisez le motif du refus</span>
+                                    <span>Veuillez sélectionner un motif de refus</span>
                                 </div>
-                                <textarea 
-                                    className="w-full bg-neutral-900 border border-red-500/30 rounded-2xl p-4 text-white focus:ring-2 focus:ring-red-500/50 outline-none min-h-[120px] transition-all"
-                                    placeholder="Ex: La rémunération ne respecte pas le minimum légal pour la durée demandée..."
-                                    value={motif}
-                                    onChange={(e) => setMotif(e.target.value)}
-                                />
+                                
+
+                                <select 
+                                value ={motifSelectionner}
+                                onChange={(e) => setMotifSelectionner(e.target.value)}
+                                className='w-full bg-neutral-900 border border-red-500/30 rounded-2xl p-4 text-white outline-none focus:ring-2 focus:ring-red-500/50'
+                                >
+                                <option value=""> Motif de refus</option>
+                                    {motifRefus.map((motif) => (
+                                    <option key={motif} value={motif}>
+                                        {motif}
+                                    </option>
+                                    ))}
+                                </select>
+
+                               {motifSelectionner === "Autre" && (
+                                        <textarea
+                                        className="w-full bg-neutral-900 border border-red-500/30 rounded-2xl p-4 text-white focus:ring-2 focus:ring-red-500/50 outline-none min-h-[120px]"
+                                        placeholder="Veuillez préciser le motif du refus..."
+                                        value={motifTexte}
+                                        onChange={(e) => setMotifTexte(e.target.value)}
+                                        />
+                                    )}
+
+
+
+
                                 <div className="flex gap-3">
                                     <Button onClick={() => handleAction('refusée')} className="flex-1 bg-red-600 hover:bg-red-500 font-bold h-12 rounded-xl">
                                         Confirmer le refus

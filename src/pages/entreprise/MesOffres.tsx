@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle2, AlertCircle, ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Clock, X, CheckCircle2, AlertCircle, ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { set } from 'date-fns';
 
 interface Offre {
     id_offre: number;
@@ -17,6 +18,7 @@ interface Offre {
     date_debut: string;
     date_fin: string;
     modification: number;
+    motif_refus?: string;
 }
 
 export default function MesOffres() {
@@ -51,6 +53,33 @@ export default function MesOffres() {
             setIsDetailLoading(false);
         }
     };
+
+
+    const deleteOffer = async()=>{
+        if (!selectedOffre){
+            return;
+        }
+        const confirmerSuppression = window.confirm(`Voulez-vous vraiment supprimer l'offre ${selectedOffre.id_offre}`);
+        if(!confirmerSuppression){
+            return;
+        }
+
+        try{
+            const res = await fetch(`http://localhost:5000/api/entreprises/${id_entreprise}/offres/${selectedOffre.id_offre}`, {
+                method: 'DELETE'
+            });
+            if(res.ok){
+                setIsEditing(false);
+                setSelectedOffre(null);
+                fetchOffres();
+            }
+        }catch(error){
+            console.error("Erreur lors de la suppression de l'offre :", error);
+        }
+
+    }
+
+
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -91,7 +120,7 @@ export default function MesOffres() {
         return (
             <Card className="bg-neutral-800 border-white/10 text-white max-w-4xl mx-auto shadow-2xl">
                 <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 mb-6">
-                    <CardTitle className="text-xl font-bold">Modifier l'offre #{selectedOffre.id_offre}</CardTitle>
+                    <CardTitle className="text-xl font-bold">Modifier / Supprimer l'offre n°{selectedOffre.id_offre}</CardTitle>
                     <Button variant="ghost" onClick={() => {setIsEditing(false); setStatus(null);}} className="text-white/50 hover:text-white">
                         <ArrowLeft size={18} className="mr-2"/> Retour
                     </Button>
@@ -119,7 +148,7 @@ export default function MesOffres() {
                             <select className="w-full bg-neutral-900 border border-white/10 rounded-md h-10 px-3 text-sm text-white" value={selectedOffre.type} onChange={e => setSelectedOffre({...selectedOffre, type: e.target.value})}>
                                 <option value="stage">Stage</option>
                                 <option value="alternance">Alternance</option>
-                                <option value="cdd">CDD</option>
+                                <option value="CDD">CDD</option>
                             </select>
                         </div>
 
@@ -161,6 +190,13 @@ export default function MesOffres() {
                         <Button type="submit" className="md:col-span-2 bg-blue-600 hover:bg-blue-700 font-bold py-6">
                             <Save size={18} className="mr-2"/> Enregistrer les modifications
                         </Button>
+                                                <Button
+                            type="button"
+                            onClick={deleteOffer}
+                            className="md:col-span-2 bg-red-600 hover:bg-red-700 font-bold py-6"
+                        >
+                            <X size={18}/> Supprimer l'offre
+                        </Button>
                     </form>
                 </CardContent>
             </Card>
@@ -189,7 +225,12 @@ export default function MesOffres() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-3">
                                     <h3 className="text-lg font-bold text-white">{offre.titre}</h3>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase ${offre.statut === 'validée' ? 'border-green-500 text-green-500 bg-green-500/10' : 'border-amber-500 text-amber-500 bg-amber-500/10'}`}>{offre.statut}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold uppercase ${offre.statut === 'validée' ? 'border-green-500 text-green-500 bg-green-500/10' : 'border-red-500 text-red-500 bg-amber-500/10'}`}>{offre.statut}</span>
+                                    {offre.statut === 'refusée' && offre.motif_refus && (
+                                        <span className='text-[12px] px-0 py-0.5 rounded-full  font-bold uppercase text-red-400 '>
+                                             {`Motif de refus : ${offre.motif_refus}`}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex gap-4 text-xs text-white/40 uppercase font-semibold">
                                     <span className="text-blue-400">{offre.type}</span>

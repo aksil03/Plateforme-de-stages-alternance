@@ -6,7 +6,7 @@ import { Search, GraduationCap, ClipboardList, UserCircle } from 'lucide-react';
 import ConsulterOffres from './ConsulterOffres';
 import MesCandidatures from './MesCandidatures';
 import ProfilEtudiant from './ProfilEtudiant';
-
+import OffresSignalees from './offresSignalees';
 export default function EtudiantDashboard() {
     return (
         <div className="flex h-screen overflow-hidden bg-neutral-900 pt-20">
@@ -34,6 +34,11 @@ export default function EtudiantDashboard() {
                             <UserCircle size={18} /> Mon Profil
                         </Button>
                     </Link>
+                    <Link to="/etudiant/offres-signalees">
+                        <Button variant="ghost" className="w-full justify-start text-white/80 hover:bg-neutral-700 gap-2">
+                            <UserCircle size={18} /> Mes offres signalées
+                        </Button>
+                    </Link>
                 </nav>
             </aside>
             <main className="flex-1 p-10 overflow-y-auto text-white">
@@ -48,6 +53,7 @@ export default function EtudiantDashboard() {
                     <Route path="consulter" element={<ConsulterOffres />} />
                     <Route path="mes-candidatures" element={<MesCandidatures />} />
                     <Route path="profil" element={<ProfilEtudiant />} />
+                    <Route path="offres-signalees" element={<OffresSignalees />} />
                 </Routes>
             </main>
         </div>

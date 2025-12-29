@@ -79,7 +79,7 @@ export default function ValidationAttestations() {
       win.document.write(`
                 <html>
                     <head><title>Aperçu Attestation</title></head>
-                    <body style="margin:0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh;">
+                    <body style="margin:0; background: #1a1a1a; position: absolute; left: 45%;top: 45%; display: flex; justify-content: center; align-items: center; height: 100vh;">
                         <embed width="100%" height="100%" src="${fileContent}" type="application/pdf">
                     </body>
                 </html>

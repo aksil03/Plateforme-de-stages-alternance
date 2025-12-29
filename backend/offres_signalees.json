@@ -1,0 +1,41 @@
+[
+  {
+    "id_etudiant": 2,
+    "id_offre": 18,
+    "titre_offre": "laravel dev",
+    "date_signal": "2025-12-29T17:11:30.647Z"
+  },
+  {
+    "id_etudiant": 48,
+    "id_offre": 15,
+    "titre_offre": "next js",
+    "date_signal": "2025-12-29T17:19:57.790Z"
+  },
+  {
+    "id_etudiant": 2,
+    "id_offre": 8,
+    "titre_offre": "inge",
+    "entreprise_nom": "apple",
+    "date_signal": "2025-12-29T17:20:42.993Z"
+  },
+  {
+    "id_etudiant": 2,
+    "id_offre": 16,
+    "titre_offre": "dev java",
+    "date_signal": "2025-12-29T17:21:10.651Z"
+  },
+  {
+    "id_etudiant": 48,
+    "id_offre": 11,
+    "titre_offre": "gerant",
+    "entreprise_nom": "apple",
+    "date_signal": "2025-12-29T17:22:50.711Z"
+  },
+  {
+    "id_etudiant": 2,
+    "id_offre": 19,
+    "titre_offre": "cobol",
+    "entreprise_nom": "amarCommunity",
+    "date_signal": "2025-12-29T17:26:12.031Z"
+  }
+]

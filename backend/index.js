@@ -2,6 +2,9 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 
+const fs = require('fs');
+const path = require('path');
+
 const app = express();
 const PORT = 5000; 
 
@@ -110,6 +113,23 @@ app.get('/api/users/etudiants', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+});
+
+
+
+app.get('/api/entreprises/etudiants_disponible', async(req, res) =>{
+    try{
+const result =await pool.query(`
+            SELECT u.id_utilisateur, u.nom, u.prenom, u.email, et.filiere, et.statut_recherche FROM utilisateur u
+    JOIN etudiant et ON u.id_utilisateur = et.id_utilisateur 
+    WHERE et.statut_recherche = true AND et.visibilite_infos =true
+    ORDER BY u.nom ASC 
+    `);
+res.json(result.rows);
+    }catch(error){
+console.error("Erreru lors d ela récuperatio des etudiants disponibles :", error.message);
+res.status(500).json({message : "Erreur technique lors de la récupération des étudiants disponibles"});
     }
 });
 
@@ -268,6 +288,11 @@ app.post('/api/entreprises/offres', async (req, res) => {
     } = req.body;
 
     try {
+
+let typeEnum = type;
+if (type.toLowerCase() === "cdd") typeEnum = "CDD";
+
+
         const entrepriseData = await pool.query("SELECT id_entreprise FROM entreprise WHERE id_utilisateur = $1", [id_user_frontend]);
         if (entrepriseData.rows.length === 0) return res.status(400).json({ message: "Profil entreprise inexistant." });
         const vrai_id_entreprise = entrepriseData.rows[0].id_entreprise;
@@ -333,7 +358,7 @@ app.post('/api/entreprises/offres', async (req, res) => {
         await pool.query(
             `INSERT INTO offre (id_entreprise, id_enseignant, titre, type, pays, adresse, description, remuneration, statut, date_validite, date_debut, date_fin, modification) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'en attente', $9, $10, $11, 0)`,
-            [vrai_id_entreprise, id_enseignant_attribue, titre, type, pays, adresse, description, remunSaisie, date_validite, date_debut, date_fin]
+            [vrai_id_entreprise, id_enseignant_attribue, titre, typeEnum, pays, adresse, description, remunSaisie, date_validite, date_debut, date_fin]
         );
 
         res.json({ message: "Offre enregistrée avec succès !" });
@@ -355,7 +380,8 @@ app.get('/api/entreprises/:id_utilisateur/offres', async (req, res) => {
                 o.type, 
                 o.statut, 
                 o.remuneration, 
-                o.modification
+                o.modification,
+                o.motif_refus
             FROM offre o
             JOIN entreprise e ON o.id_entreprise = e.id_entreprise
             WHERE e.id_utilisateur = $1
@@ -393,6 +419,12 @@ app.put('/api/offres/:id', async (req, res) => {
     } = req.body;
 
     try {
+
+
+        let typeEnum = type;
+        if (type.toLowerCase() === "cdd") typeEnum = "CDD";
+
+
         const dDebut = new Date(date_debut);
         const dFin = new Date(date_fin);
         const diffTemps = Math.abs(dFin.getTime() - dDebut.getTime());
@@ -451,7 +483,7 @@ app.put('/api/offres/:id', async (req, res) => {
                  modification = modification + 1,
                  statut = 'en attente' 
              WHERE id_offre = $10`,
-            [titre, description, remunSaisie, type, pays, adresse, date_debut, date_fin, date_validite, id]
+            [titre, description, remunSaisie, typeEnum, pays, adresse, date_debut, date_fin, date_validite, id]
         );
 
         res.json({ message: "Offre mise à jour avec succès. Elle doit être de nouveau validée." });
@@ -579,6 +611,8 @@ app.patch('/api/offres/:id/statut', async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la mise à jour du statut." });
     }
 });
+
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -642,6 +676,23 @@ try{
 console.log("Erreur lors de la suppression de l'attestation :", error.message);
 res.status(500).json({message : "Erreur lors de la suppression de l'attestation"});
 }
+});
+
+app.delete('/api/entreprises/:id/offres/:id_offre', async(req, res)=> {
+    const { id_offre } =req.params;
+
+    try{
+        await pool.query(
+            'DELETE FROM offre WHERE id_offre = $1',
+            [id_offre]
+        );
+        res.status(200).json({message : "offre supprimée avec succés"});
+
+    }catch(error){
+        console.log("Erreur lors de la suppression de l'offre :", error.message);
+        res.status(500).json({message : "Erreur lors de la suppression de l'offre"});
+    }
+
 });
 
 
@@ -720,6 +771,90 @@ app.put('/api/secretaire/valider-attestation', async (req, res) => {
 });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const filePath = path.join(__dirname, 'offres_signalees.json');
+
+
+app.post('/api/entreprises/signal-offre', async (req, res) => {
+    const { id_etudiant, id_offre, titre_offre, entreprise_nom } = req.body;
+
+    try {
+        const data = fs.existsSync(filePath) ? fs.readFileSync(filePath) : '[]';
+        const offres = JSON.parse(data);
+
+        offres.push({
+            id_etudiant,
+            id_offre,
+            titre_offre,
+            entreprise_nom, 
+            date_signal: new Date().toISOString()
+        });
+
+        fs.writeFileSync(filePath, JSON.stringify(offres, null, 2));
+
+        res.json({ message: "Offre signalée avec succès !" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erreur lors du signalement de l'offre" });
+    }
+});
+
+
+
+
+
+app.get('/api/etudiants/:id/offres-signalees', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const data = fs.existsSync(filePath) ? fs.readFileSync(filePath) : '[]';
+        const offres = JSON.parse(data);
+
+        const etudiantOffres = offres.filter(o => o.id_etudiant == id);
+
+        res.json(etudiantOffres);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erreur lors de la récupération des offres signalées." });
+    }
+});
+
+
+
+
+
+app.get('/api/entreprises/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return res.status(400).json({ message: "ID invalide" });
+
+  try {
+    const result = await pool.query(
+      "SELECT id_entreprise, raison_sociale AS nom FROM entreprise WHERE id_utilisateur = $1",
+      [id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ message: "Entreprise non trouvée" });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 
 
 

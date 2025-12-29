@@ -19,6 +19,10 @@ import {
 export default function ConsulterOffres() {
   const [appliedOffers, setAppliedOffers] = useState<number[]>([]);
 
+
+  const idOffre = localStorage.getItem("offreSelectionnee");
+
+
   const [offres, setOffres] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOffre, setSelectedOffre] = useState<any>(null);
@@ -27,6 +31,18 @@ export default function ConsulterOffres() {
   const [cv, setCv] = useState("");
   const [lettre, setLettre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+  useEffect(() => {
+  if (!idOffre) return;
+
+  fetch(`http://localhost:5000/api/offres/${idOffre}`)
+    .then(res => res.json())
+    .then(data => {
+      setOffres(data); 
+    });
+}, [idOffre]);
+
 
   const fetchOffres = async () => {
     try {
