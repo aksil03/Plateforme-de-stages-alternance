@@ -753,6 +753,9 @@ app.get('/api/etudiants/:id/attestation', async (req, res) => {
 
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
+      if (!row.attestation_fichier) {
+          return res.json(null); 
+      }
     } else {
       res.status(404).json({ message: "Étudiant non trouvé" });
     }
@@ -1024,6 +1027,69 @@ app.get('/api/enseignant/:id/renoncement', async(req, res)=>{
 });
 
 
+
+app.post('/api/candidatures/affectation', async(req, res)=>{
+    const {id_candidature, id_offre, id_etudiant}=req.body;
+
+    try{
+
+
+        await pool.query('BEGIN');
+
+        await pool.query(`
+            UPDATE candidature 
+            SET statut_candidature = 'acceptée entreprise' 
+            WHERE id_candidature = $1
+        `, [id_candidature]);
+
+        await pool.query(`
+            UPDATE candidature set statut_candidature='renoncée' WHERE id_etudiant = $1 AND id_candidature <> $2
+            `,[id_etudiant, id_candidature]);
+
+        await pool.query(`
+            UPDATE candidature set statut_candidature = 'refusée' WHERE id_etudiant <> $1 AND id_offre =$2
+            `,[id_etudiant, id_offre]);
+
+
+        await pool.query('COMMIT');
+
+        res.json({message : "affectation validé avec succés"});
+    }catch(error){
+        await pool.query(`ROLLBACK`);
+        console.error("Erreur lors de la validatio de l'affectation", error.message);
+        res.status(500).json({ error: error.message });
+    }
+
+});
+
+
+
+app.get('/api/candidatures/acceptees', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                c.id_candidature,
+                c.id_offre,
+                c.id_etudiant,
+                u.nom AS etudiant_nom,
+                u.prenom AS etudiant_prenom,
+                o.titre AS offre_titre,
+                 e.raison_sociale AS entreprise_nom
+            FROM candidature c
+            JOIN utilisateur u ON c.id_etudiant = u.id_utilisateur
+            JOIN offre o ON c.id_offre = o.id_offre
+			JOIN entreprise e ON o.id_entreprise=e.id_entreprise
+            JOIN utilisateur ent ON o.id_entreprise = ent.id_utilisateur
+            WHERE c.statut_candidature = 'acceptée'
+        `;
+
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des candidatures acceptées:", error.message);
+        res.status(500).json({ error: "Erreur serveur lors de la récupération des données" });
+    }
+});
 
 
 
