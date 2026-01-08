@@ -7,12 +7,21 @@ import {
     Users, 
     FileText, 
     ShieldCheck, 
-    LogOut 
+    LogOut,
+    UserCog
 } from 'lucide-react';
 
 import ValiderOffres from './ValiderOffres';
+import ListeRenoncement from '../enseignant/ListeRenoncement';
+
+import InscriptionEtudiant from '../secretaire/InscriptionEtudiant';
+import ValidationAttestations from '../secretaire/ValidationAttestations';
+
 
 export default function EnseignantDashboard() {
+
+const isReplacement = localStorage.getItem('isReplacement') === 'true';
+
     const handleLogout = () => {
         localStorage.clear();
         window.location.href = '/login';
@@ -39,12 +48,36 @@ export default function EnseignantDashboard() {
                             <span className="font-medium">Offres à valider</span>
                         </Button>
                     </Link>
-                    <Link to="/enseignant/candidatures">
+                    <Link to="/enseignant/liste_renoncement">
                         <Button variant="ghost" className="w-full justify-start text-white/70 hover:bg-neutral-700 hover:text-white gap-3 h-12 rounded-xl transition-all border border-transparent hover:border-white/5">
                             <Users size={20} />
-                            <span className="font-medium">Suivi Candidatures</span>
+                            <span className="font-medium">Liste des renoncements</span>
                         </Button>
                     </Link>
+
+
+                    {
+
+                        isReplacement && (
+                    <div>
+                        <Link to="/enseignant/Inscription">
+                        <Button variant="ghost" className="w-full justify-start text-white/70 hover:bg-neutral-700 hover:text-white gap-3 h-12 rounded-xl transition-all border border-transparent hover:border-white/5">
+                            <CheckSquare size={20} />
+                            <span className="font-medium">Inscrire Étudiant</span>
+                        </Button>
+                    </Link>
+                    <Link to="/enseignant/Validation">
+                        <Button variant="ghost" className="w-full justify-start text-white/70 hover:bg-neutral-700 hover:text-white gap-3 h-12 rounded-xl transition-all border border-transparent hover:border-white/5">
+                            <Users size={20} />
+                            <span className="font-medium">Valider Attestations</span>
+                        </Button>
+                    </Link>
+                    </div>
+                )
+                    }
+
+                
+
                 </nav>
 
                 <Button 
@@ -69,6 +102,10 @@ export default function EnseignantDashboard() {
                         </div>
                     } />
                     <Route path="valider-offres" element={<ValiderOffres />} />
+                    <Route path="liste_renoncement" element={<ListeRenoncement/>}/>
+                    <Route path= "Inscription" element={<InscriptionEtudiant/>} />
+                    <Route path= "Validation" element={<ValidationAttestations/>} />
+
                 </Routes>
                 <Outlet />
             </main>

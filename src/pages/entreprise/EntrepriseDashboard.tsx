@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ListOrdered, Building2 } from 'lucide-react';
+import { PlusCircle, ListOrdered, Building2, Users, Check} from 'lucide-react';
 import DeposerOffre from './DeposerOffre';
 import MesOffres from './MesOffres';
 import ConsulterEtudiants from './ConsulterEtudiants';
@@ -29,12 +29,13 @@ export default function EntrepriseDashboard() {
                     </Link>
                     <Link to="/entreprise/consulter_etudiants">
                         <Button variant="ghost" className="w-full justify-start text-white/80 hover:bg-neutral-700 gap-2">
-                            <ListOrdered size={18} /> Consulter les étudiants 
+                            <Users size={18} /> Consulter les étudiants 
                         </Button>
                     </Link>
                     <Link to="/entreprise/valider_candidatures">
                         <Button variant="ghost" className="w-full justify-start text-white/80 hover:bg-neutral-700 gap-2">
-                            <ListOrdered size={18} /> Valider les candidatures 
+                            <Check size={18} /> Valider les candidatures 
+
                         </Button>
                     </Link>
                 </nav>

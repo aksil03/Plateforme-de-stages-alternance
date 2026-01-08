@@ -102,6 +102,50 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+
+
+
+app.post('/api/creationCompte', async(req, res) =>{
+
+    const {role,login, password, nom, prenom, email}=req.body;
+
+    try{
+
+         await pool.query(`BEGIN`);
+
+        const user = await pool.query(`
+            INSERT INTO utilisateur (login, mdp, nom,prenom, email) VALUES ($1,$2,$3,$4,$5) RETURNING id_utilisateur
+            `,[login, password, nom, prenom,email]);
+
+        const userId = user.rows[0].id_utilisateur;
+
+
+        if(role === 'Enseignant'){
+            await pool.query(` 
+               INSERT INTO enseignant_responsable (id_utilisateur, remplacement_secretaire) VALUES ($1, false) 
+                `,[userId]);
+
+        }else if(role === 'Secretaire'){
+
+            await pool.query(` 
+               INSERT INTO secretaire (id_utilisateur) VALUES ($1) 
+                `,[userId]);
+
+        }
+
+
+        await pool.query(`COMMIT`);
+        res.status(201).json({ message: 'Compte créé avec succès !' });
+
+    }catch(error){
+        await pool.query('ROLLBACK');
+        console.error("erreur lors de la creation du comptes :", error.message);
+        res.status(500).json({message: 'Erreur technique lors de la creation du compte '})
+
+    }
+
+});
+
 app.get('/api/users/etudiants', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -866,13 +910,13 @@ app.get('/api/entreprises/:id/candidatures', async(req, res) =>{
 
     try{
         const result = await pool.query(`
-            SELECT e.raison_sociale,o.titre,c.id_candidature, c.id_etudiant, c.id_offre, c.statut_candidature, c.date_candidature, u.nom, u.prenom, u.email
+            SELECT e.raison_sociale,o.titre,c.id_candidature, c.id_etudiant, c.id_offre, c.statut_candidature,c.justificatif_renoncement, c.date_candidature, u.nom, u.prenom, u.email
             FROM candidature c
             JOIN etudiant et ON c.id_etudiant = et.id_utilisateur
             JOIN offre o ON c.id_offre = o.id_offre
             JOIN utilisateur u ON et.id_utilisateur = u.id_utilisateur
 			JOIN entreprise e ON o.id_entreprise = e.id_entreprise
-            WHERE e.id_utilisateur =$1 AND c.statut_candidature = 'en attente' 
+            WHERE e.id_utilisateur =$1 AND (c.statut_candidature = 'en attente' OR c.statut_candidature = 'renoncée')
             ORDER BY c.date_candidature DESC;
         `, [id]
             );
@@ -953,6 +997,30 @@ app.patch('/api/candidatures/:id/renoncer', async (req, res)=>{
 
     }
 
+});
+
+
+
+app.get('/api/enseignant/:id/renoncement', async(req, res)=>{
+    try {
+        const result = await pool.query(`
+            SELECT 
+                c.id_candidature, c.id_etudiant,c.id_offre,  c.justificatif_renoncement, c.date_candidature,u.nom, 
+                u.prenom, u.email, o.titre, e.raison_sociale AS entreprise_nom
+            FROM candidature c
+            JOIN utilisateur u ON c.id_etudiant = u.id_utilisateur
+            JOIN offre o ON c.id_offre = o.id_offre
+            JOIN entreprise e ON o.id_entreprise = e.id_entreprise 
+            WHERE c.statut_candidature = 'renoncée'
+            ORDER BY c.date_candidature DESC;
+        `);
+
+        res.json(result.rows);
+
+    } catch(error) {
+        console.error("Erreur technique lors du chargement des renoncements :", error.message);
+        res.status(500).json({message : "Erreur technique"});
+    }
 });
 
 

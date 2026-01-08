@@ -12,6 +12,7 @@ interface Candidature {
   prenom: string;
   email: string;
   titre: string;
+  justificatif_renoncement?: string;
 }
 
 export default function ValiderCandidatures() {
@@ -115,8 +116,27 @@ export default function ValiderCandidatures() {
                   </div>
                 </div>
 
+
+
+
+
+
                 <div className="flex items-center gap-3">
-                  <button
+
+{c.statut_candidature === 'renoncée' ? (
+    <div className="flex flex-col items-end gap-1">
+        <span className="px-3 py-1 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded-lg text-[10px] font-bold uppercase">l'étudiant a renoncé à cette offre</span>
+        {c.justificatif_renoncement && (
+            <button onClick={()=> alert(`Le motif de renoncement est : ${c.justificatif_renoncement}`)}
+            className="text-[12px] pr-1 text-white/50 hover:text-white  transition-all"
+            >
+                Voir la justification
+            </button>
+        )}
+    </div>
+) : (
+    <>
+    <button
                     onClick={ () => handleDecision(c.id_candidature, "accepter")}
                     className="flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-500 border border-green-500/20 rounded-xl font-bold text-xs uppercase transition-all"
                   >
@@ -130,7 +150,19 @@ export default function ValiderCandidatures() {
                     <X size={16} />
                     Refuser
                   </button>
+    </>
+
+
+)}
+
+                  
                 </div>
+
+
+
+
+
+
               </div>
             </div>
           ))}
