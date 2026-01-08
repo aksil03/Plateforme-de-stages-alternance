@@ -10,7 +10,6 @@ import {
   FileText,
 } from "lucide-react";
 
-// 1. Définition de l'interface pour l'objet RC
 interface AttestationData {
   attestation_fichier: string;
   validation_attestation: string;
@@ -166,7 +165,7 @@ export default function ProfilEtudiant() {
 
           {chargerAttestation ? (
             <p>Chargement...</p>
-          ) : RC ? (
+          ) : (RC && RC.attestation_fichier) ? (
             <div className="flex justify-between items-center gap-4">
               <div className="flex items-center gap-3">
                 <span className="text-lime">Attestation RC</span>

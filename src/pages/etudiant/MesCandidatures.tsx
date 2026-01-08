@@ -98,7 +98,7 @@ export default function MesCandidatures() {
                                     <span className={`text-[10px] px-3 py-1 rounded-full border font-bold uppercase ${getStatusStyle(c.statut_candidature)}`}>
                                         {c.statut_candidature}
                                     </span>
-                                    {c.statut_candidature !== 'renoncée' && c.statut_candidature !== 'refusée' &&(
+                                    {c.statut_candidature !== 'renoncée' && c.statut_candidature !== 'refusée' && c.statut_candidature !== "acceptée entreprise" &&(
                                         <button onClick={()=> handleRenoncer(c)} className=' flex items-center  text-white  p-[6px] pr-[11px] rounded-[15px] bg-red-600 hover:bg-red-800 text-[12px] font-bold uppercase transition-all'>
                                         <X size={20} className='pr-1'></X>
                                         renoncer

@@ -13,6 +13,7 @@ import {
 
 import ValiderOffres from './ValiderOffres';
 import ListeRenoncement from '../enseignant/ListeRenoncement';
+import ValiderAffectation from './ValiderAffectation';
 
 import InscriptionEtudiant from '../secretaire/InscriptionEtudiant';
 import ValidationAttestations from '../secretaire/ValidationAttestations';
@@ -52,6 +53,12 @@ const isReplacement = localStorage.getItem('isReplacement') === 'true';
                         <Button variant="ghost" className="w-full justify-start text-white/70 hover:bg-neutral-700 hover:text-white gap-3 h-12 rounded-xl transition-all border border-transparent hover:border-white/5">
                             <Users size={20} />
                             <span className="font-medium">Liste des renoncements</span>
+                        </Button>
+                    </Link>
+                    <Link to="/enseignant/valider_affectation">
+                        <Button variant="ghost" className="w-full justify-start text-white/70 hover:bg-neutral-700 hover:text-white gap-3 h-12 rounded-xl transition-all border border-transparent hover:border-white/5">
+                            <Users size={20} />
+                            <span className="font-medium">Valider affectation</span>
                         </Button>
                     </Link>
 
@@ -105,6 +112,8 @@ const isReplacement = localStorage.getItem('isReplacement') === 'true';
                     <Route path="liste_renoncement" element={<ListeRenoncement/>}/>
                     <Route path= "Inscription" element={<InscriptionEtudiant/>} />
                     <Route path= "Validation" element={<ValidationAttestations/>} />
+                    <Route path= "valider_affectation" element={<ValiderAffectation/>} />
+
 
                 </Routes>
                 <Outlet />
